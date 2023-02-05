@@ -17,7 +17,7 @@ function ZipCode() {
         console.log('value is:', event.target.value);
     }
 
-    function handleClick() {
+    const  handleClick = async () => {
         if(zipcode.length === 0) {
             alert("please enter zip code first")
         } else if (countryCode.length === 0) {
@@ -25,19 +25,26 @@ function ZipCode() {
         }
 
         if(zipcode.length > 0 && countryCode.length > 0 ) {
-          
-          axios.get(`http://api.zippopotam.us/${countryCode}/${zipcode}`).then(
-            (response) => {
-              if(response) {
-                console.log(response);
-                setData(response.data)
-              } else {
-                alert("plz try another zipcoode")
-              }
-              
-            })
-        }
+        
+          try {
+            const response = await axios.get(`http://api.zippopotam.us/${countryCode}/${zipcode}`)
+        
+            if(response) {
+              console.log("response",response);
+              setData(response.data)
+            } else {
+              alert("plz try another zipcoode")
+            }
+          } catch(err) {
+           
+            if(err.response.status === 404){
+              alert("zip Code not found try another")
+            }
+          }
+      
+    
       }
+    }
            
   return (
     <div>
@@ -47,8 +54,9 @@ function ZipCode() {
       <input type="text" name="countrycode" onChange={handlechangeCountrycode} value={countryCode} placeholder="enter coutry code"/>
       <br />
         <button onClick={handleClick} type="button">Search</button>
-     
+        { Object.keys(data).length > 0 ? 
         <table>
+          <thead>
             <tr>
               <th>Country</th>
               <th>State</th>
@@ -56,7 +64,9 @@ function ZipCode() {
               <th>lat</th>
               <th>lng</th>
             </tr>  
-            { Object.keys(data).length > 0 ?        
+            </thead>
+                
+            <tbody>
             <tr>             
               <td>{data?.country}</td>
               <td>{data?.places[0].state} </td>
@@ -64,10 +74,12 @@ function ZipCode() {
               <td>{data?.places[0].latitude}</td>
               <td>{data?.places[0].longitude}</td>          
             </tr>   
-            : <h2>no data yet</h2>
-            }                 
+            </tbody>
+                           
             
           </table>
+           : <h2>no data yet</h2>
+          } 
 
 
         {/* <button onClick={getZippotam} type="submit" value={getZippotam}>Submit</button> */}
